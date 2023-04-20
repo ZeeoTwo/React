@@ -38,6 +38,7 @@ const List: React.FC<ListProps> = ({ name }) => {
       console.log(err);
     }
   };
+  getData();
 
   const sendData = async (data: { id: number; image: string | undefined }) => {
     try {
