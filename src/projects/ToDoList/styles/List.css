@@ -1,0 +1,16 @@
+.low {
+  filter: invert(34%) sepia(38%) saturate(1769%) hue-rotate(120deg)
+    brightness(97%) contrast(105%);
+}
+.mid {
+  filter: invert(62%) sepia(87%) saturate(1983%) hue-rotate(13deg)
+    brightness(109%) contrast(103%);
+}
+.high {
+  filter: invert(10%) sepia(67%) saturate(7401%) hue-rotate(2deg)
+    brightness(93%) contrast(86%);
+}
+.done {
+  filter: invert(52%) sepia(0%) saturate(0%) hue-rotate(287deg) brightness(96%)
+    contrast(90%);
+}
