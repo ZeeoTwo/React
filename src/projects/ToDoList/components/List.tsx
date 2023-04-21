@@ -4,52 +4,92 @@ import axios from "axios";
 
 interface ListProps {
   name: string;
+  id_list: number;
+  initial_tasks?: Task[];
 }
-type Task = {
+
+export type Task = {
   value: string;
   id: number;
+  id_list?: number;
   priority: 0 | 1 | 2 | 3; // 0 - Done | 1 - Low Priority | 2 - Mid Priority | 3 - High Priority
+  image: File | null;
 };
 
-const List: React.FC<ListProps> = ({ name }) => {
+const List: React.FC<ListProps> = ({ name, id_list, initial_tasks }) => {
   const input = useRef<HTMLInputElement>(null);
   const inputEdit = useRef<HTMLInputElement>(null);
-
   const inputFile = useRef<HTMLInputElement>(null);
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
 
   const [tasks, setTasks] = useState<Task[]>([]);
   const [editingTaskIndex, setEditingTaskIndex] = useState<number | null>(null);
 
-  const handleClick = () => {
+  useEffect(() => {
+    const tasks: Task[] = initial_tasks ?? [];
+    setTasks(tasks);
+  }, []);
+
+  const handleClick = async () => {
     const value = input.current?.value || "";
-    const task: Task = { value, priority: 1, id: tasks.length + 1 };
+    const task: Task = {
+      id: tasks.length + 1,
+      id_list,
+      value,
+      priority: 1,
+      image: null,
+    };
     if (value === "") {
       return;
     }
-    setTasks((prevTasks) => [...prevTasks, task]);
-  };
-
-  const getData = async () => {
     try {
-      const res = await axios.get("http://localhost:12000/api/data");
-      console.log(res.data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-  getData();
+      const res = await insertTask({ task, id_list });
 
-  const sendData = async (data: { id: number; image: string | undefined }) => {
-    try {
-      const res = await axios.post("http://localhost:12000/api/data", data);
-      console.log(res.data);
+      const t_obj = task;
+      t_obj.id_list = id_list;
+      setTasks((prevTasks) => {
+        return [...prevTasks, t_obj];
+      });
     } catch (err) {
       console.log(err);
     }
   };
 
-  const handleComplete = (index: number) => {
+  const insertTask = async (data: { task: Task; id_list: number }) => {
+    try {
+      const res = await axios.post(
+        "http://localhost:12000/api/data/task",
+        data
+      );
+      console.log(res.data);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const editTaskDB = async (
+    index: number,
+    type?: boolean,
+    value?: string | number
+  ) => {
+    const data: any = { id_task: tasks[index].id, type: type, value: value };
+
+    try {
+      const res = await axios.post(
+        "http://localhost:12000/api/data/task/update",
+        data
+      );
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleComplete = async (index: number) => {
+    try {
+      editTaskDB(index, false, 0);
+    } catch (err) {
+      console.log(err);
+    }
+
     setTasks((prevTask) => {
       const updatedTaskList = [...prevTask];
       updatedTaskList[index].priority = 0;
@@ -57,7 +97,8 @@ const List: React.FC<ListProps> = ({ name }) => {
       return updatedTaskList;
     });
   };
-  const handlePriorityChange = (index: number) => {
+
+  const handlePriorityChange = async (index: number) => {
     setTasks((prevTaskList) => {
       const updatedTaskList = [...prevTaskList];
       const currentPriority = updatedTaskList[index].priority;
@@ -69,6 +110,13 @@ const List: React.FC<ListProps> = ({ name }) => {
       } else {
         newPriority = 2;
       }
+
+      try {
+        editTaskDB(index, false, newPriority);
+      } catch (err) {
+        console.log(err);
+      }
+
       updatedTaskList[index].priority = newPriority;
       updatedTaskList.sort((a, b) => b.priority - a.priority);
       return updatedTaskList;
@@ -87,9 +135,15 @@ const List: React.FC<ListProps> = ({ name }) => {
     });
   };
 
-  const handleEditSave = (index: number, value: string) => {
+  const handleEditSave = async (index: number, value: string) => {
     setEditingTaskIndex(null);
     handleEditChange(index, value);
+
+    try {
+      editTaskDB(index, true, value);
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   const saveImageToDatabase = (image: File, id: number) => {
@@ -98,7 +152,7 @@ const List: React.FC<ListProps> = ({ name }) => {
     reader.onload = () => {
       const base64Image = reader.result?.toString().split(",")[1];
       try {
-        sendData({ id: id, image: base64Image });
+        // sendData({ id: id, image: base64Image });
       } catch (error) {
         console.error(error);
       }
@@ -107,8 +161,9 @@ const List: React.FC<ListProps> = ({ name }) => {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
+
     if (files && files.length > 0) {
-      setSelectedImage(files[0]);
+      saveImageToDatabase(files[0], tasks.length + 1);
     }
   };
 
@@ -117,11 +172,6 @@ const List: React.FC<ListProps> = ({ name }) => {
       inputEdit.current.focus();
     }
   }, [editingTaskIndex]);
-  useEffect(() => {
-    if (selectedImage) {
-      saveImageToDatabase(selectedImage, tasks.length);
-    }
-  }, [selectedImage]);
 
   return (
     <div className="m-2 border border-dashed p-4">
