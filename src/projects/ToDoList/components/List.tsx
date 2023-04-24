@@ -13,17 +13,27 @@ export type Task = {
   id: number;
   id_list?: number;
   priority: 0 | 1 | 2 | 3; // 0 - Done | 1 - Low Priority | 2 - Mid Priority | 3 - High Priority
-  image: File | null;
+  image: null | string;
 };
 
 const List: React.FC<ListProps> = ({ name, id_list, initial_tasks }) => {
   const input = useRef<HTMLInputElement>(null);
   const inputEdit = useRef<HTMLInputElement>(null);
-  const inputFile = useRef<HTMLInputElement>(null);
 
+  const [inputFile, setInputFile] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [editingTaskIndex, setEditingTaskIndex] = useState<number | null>(null);
+  const [showPopup, setShowPopup] = useState(false);
 
+  const togglePopup = () => {
+    setShowPopup(!showPopup);
+  };
+
+  const imageStyle = {
+    width: `200px`,
+    height: `200px`,
+    objectFit: "cover",
+  };
   useEffect(() => {
     const tasks: Task[] = initial_tasks ?? [];
     setTasks(tasks);
@@ -36,7 +46,7 @@ const List: React.FC<ListProps> = ({ name, id_list, initial_tasks }) => {
       id_list,
       value,
       priority: 1,
-      image: null,
+      image: inputFile,
     };
     if (value === "") {
       return;
@@ -45,6 +55,7 @@ const List: React.FC<ListProps> = ({ name, id_list, initial_tasks }) => {
       const res = await insertTask({ task, id_list });
 
       const t_obj = task;
+      console.log(res);
       t_obj.id_list = id_list;
       setTasks((prevTasks) => {
         return [...prevTasks, t_obj];
@@ -62,7 +73,7 @@ const List: React.FC<ListProps> = ({ name, id_list, initial_tasks }) => {
       );
       console.log(res.data);
     } catch (err) {
-      console.log(err);
+      // console.log(err);
     }
   };
 
@@ -79,7 +90,7 @@ const List: React.FC<ListProps> = ({ name, id_list, initial_tasks }) => {
         data
       );
     } catch (err) {
-      console.log(err);
+      // console.log(err);
     }
   };
 
@@ -87,7 +98,7 @@ const List: React.FC<ListProps> = ({ name, id_list, initial_tasks }) => {
     try {
       editTaskDB(index, false, 0);
     } catch (err) {
-      console.log(err);
+      // console.log(err);
     }
 
     setTasks((prevTask) => {
@@ -114,7 +125,7 @@ const List: React.FC<ListProps> = ({ name, id_list, initial_tasks }) => {
       try {
         editTaskDB(index, false, newPriority);
       } catch (err) {
-        console.log(err);
+        // console.log(err);
       }
 
       updatedTaskList[index].priority = newPriority;
@@ -142,28 +153,36 @@ const List: React.FC<ListProps> = ({ name, id_list, initial_tasks }) => {
     try {
       editTaskDB(index, true, value);
     } catch (err) {
-      console.log(err);
+      // console.log(err);
     }
   };
 
-  const saveImageToDatabase = (image: File, id: number) => {
-    const reader = new FileReader();
-    reader.readAsDataURL(image);
-    reader.onload = () => {
-      const base64Image = reader.result?.toString().split(",")[1];
-      try {
-        // sendData({ id: id, image: base64Image });
-      } catch (error) {
-        console.error(error);
+  const convertImage = (image: File | null): Promise<string | null> => {
+    return new Promise((resolve, reject) => {
+      if (!image) {
+        resolve(null);
+        return;
       }
-    };
+
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64String = reader.result as string;
+        const encodedString = base64String.split(",")[1]; // remove the data:image/jpeg;base64, prefix
+        resolve(encodedString);
+      };
+      reader.onerror = (error) => {
+        reject(error);
+      };
+      reader.readAsDataURL(image);
+    });
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
 
     if (files && files.length > 0) {
-      saveImageToDatabase(files[0], tasks.length + 1);
+      const image = await convertImage(files.item(0));
+      setInputFile(image);
     }
   };
 
@@ -198,7 +217,6 @@ const List: React.FC<ListProps> = ({ name, id_list, initial_tasks }) => {
             accept="image/*"
             className="hidden"
             onChange={handleImageChange}
-            ref={inputFile}
           />
           File
         </label>
@@ -225,12 +243,25 @@ const List: React.FC<ListProps> = ({ name, id_list, initial_tasks }) => {
                   }}
                 />
               ) : (
-                <span
-                  className="cursor-pointer"
-                  onClick={() => handleEdit(index)}
-                >
-                  {task.value}
-                </span>
+                <>
+                  <span
+                    className="cursor-pointer"
+                    onClick={() => handleEdit(index)}
+                    // onMouseUp={togglePopup}
+                  >
+                    {task.value}
+                  </span>
+                  <div onClick={togglePopup}>\ img</div>
+                  {showPopup && (
+                    <div className=" z-10 rounded-lg border border-black bg-white">
+                      <img
+                        src={`data:image/jpeg;base64,${task.image}`}
+                        className="rounded-lg object-contain"
+                        onMouseDown={togglePopup}
+                      />
+                    </div>
+                  )}
+                </>
               )}
               <button
                 onClick={() => {

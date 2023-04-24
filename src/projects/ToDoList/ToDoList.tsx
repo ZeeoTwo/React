@@ -64,7 +64,7 @@ const ToDoList: React.FC = () => {
       const res = await axios.get<dbResponse>(
         "http://localhost:12000/api/data"
       );
-      console.log(res.data);
+      // console.log(res.data);
       return res.data;
     } catch (err) {
       console.log(err);
@@ -78,15 +78,12 @@ const ToDoList: React.FC = () => {
       const tasksInList = data.tasks.filter((task) => task.id_list === list.id);
       groupedTasks.push({ id_list: list.id, tasks: tasksInList });
     });
-    console.log(groupedTasks);
+    // console.log(groupedTasks);
 
     groupedTasks.forEach((task) => {
+      const sorted = task.tasks.sort((a, b) => b.priority - a.priority);
       const tmp = (
-        <List
-          name={""}
-          id_list={task.id_list}
-          initial_tasks={task.tasks}
-        ></List>
+        <List name={""} id_list={task.id_list} initial_tasks={sorted}></List>
       );
       setTaskList((prevTaskList) => [
         ...prevTaskList,
