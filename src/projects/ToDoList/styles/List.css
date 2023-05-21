@@ -14,3 +14,34 @@
   filter: invert(52%) sepia(0%) saturate(0%) hue-rotate(287deg) brightness(96%)
     contrast(90%);
 }
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 9999;
+}
+
+.modal-content {
+  position: relative;
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+}
+
+.modal-close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 8px 12px;
+  background-color: #ccc;
+  color: black;
+  border-radius: 4px;
+  cursor: pointer;
+}

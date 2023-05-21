@@ -3,7 +3,7 @@ import "../styles/List.css";
 import axios from "axios";
 
 interface ListProps {
-  name: string;
+  name: string | undefined;
   id_list: number;
   initial_tasks?: Task[];
 }
@@ -19,13 +19,16 @@ export type Task = {
 const List: React.FC<ListProps> = ({ name, id_list, initial_tasks }) => {
   const input = useRef<HTMLInputElement>(null);
   const inputEdit = useRef<HTMLInputElement>(null);
-
+  const [selectedTaskIndex, setSelectedTaskIndex] = useState<number | null>(
+    null
+  );
   const [inputFile, setInputFile] = useState<string | null>(null);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [editingTaskIndex, setEditingTaskIndex] = useState<number | null>(null);
   const [showPopup, setShowPopup] = useState(false);
 
-  const togglePopup = () => {
+  const togglePopup = (index: number) => {
+    setSelectedTaskIndex(index);
     setShowPopup(!showPopup);
   };
 
@@ -60,6 +63,7 @@ const List: React.FC<ListProps> = ({ name, id_list, initial_tasks }) => {
       setTasks((prevTasks) => {
         return [...prevTasks, t_obj];
       });
+      togglePopup(tasks.length);
     } catch (err) {
       console.log(err);
     }
@@ -251,16 +255,32 @@ const List: React.FC<ListProps> = ({ name, id_list, initial_tasks }) => {
                   >
                     {task.value}
                   </span>
-                  <div onClick={togglePopup}>\ img</div>
-                  {showPopup && (
-                    <div className=" z-10 rounded-lg border border-black bg-white">
+                  {task.image && (
+                    <div onClick={() => togglePopup(index)}>
                       <img
-                        src={`data:image/jpeg;base64,${task.image}`}
-                        className="rounded-lg object-contain"
-                        onMouseDown={togglePopup}
-                      />
+                        src={"assets/icons/image.png"}
+                        className=" ml-2 w-7 cursor-pointer"
+                      ></img>
                     </div>
                   )}
+                  {showPopup &&
+                    selectedTaskIndex !== null &&
+                    selectedTaskIndex === index && (
+                      <div className="modal">
+                        <div className="modal-content">
+                          <img
+                            src={`data:image/jpeg;base64,${task.image}`}
+                            className="rounded-lg object-contain"
+                          />
+                          <button
+                            className="modal-close"
+                            onClick={() => togglePopup(index)}
+                          >
+                            Close
+                          </button>
+                        </div>
+                      </div>
+                    )}
                 </>
               )}
               <button

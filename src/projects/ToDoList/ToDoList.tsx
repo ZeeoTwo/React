@@ -83,7 +83,11 @@ const ToDoList: React.FC = () => {
     groupedTasks.forEach((task) => {
       const sorted = task.tasks.sort((a, b) => b.priority - a.priority);
       const tmp = (
-        <List name={""} id_list={task.id_list} initial_tasks={sorted}></List>
+        <List
+          name={data.lists.find((list) => list.id === task.id_list)?.name}
+          id_list={task.id_list}
+          initial_tasks={sorted}
+        ></List>
       );
       setTaskList((prevTaskList) => [
         ...prevTaskList,

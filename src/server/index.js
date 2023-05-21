@@ -93,6 +93,8 @@ app.post("/api/data/list", async (req, res) => {
   }
 });
 
+app.delete("/api/data/list/delete", async (req, res) => {});
+
 app.listen(12000, () => {
   console.log("Run");
 });
