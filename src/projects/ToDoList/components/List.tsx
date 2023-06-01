@@ -19,6 +19,7 @@ export type Task = {
 const List: React.FC<ListProps> = ({ name, id_list, initial_tasks }) => {
   const input = useRef<HTMLInputElement>(null);
   const inputEdit = useRef<HTMLInputElement>(null);
+  const [rel, setRel] = useState(0);
   const [selectedTaskIndex, setSelectedTaskIndex] = useState<number | null>(
     null
   );
@@ -63,7 +64,6 @@ const List: React.FC<ListProps> = ({ name, id_list, initial_tasks }) => {
       setTasks((prevTasks) => {
         return [...prevTasks, t_obj];
       });
-      togglePopup(tasks.length);
     } catch (err) {
       console.log(err);
     }
@@ -190,6 +190,31 @@ const List: React.FC<ListProps> = ({ name, id_list, initial_tasks }) => {
     }
   };
 
+  const handleListDelete = async (id: number) => {
+    try {
+      console.log(id);
+      const res = await axios.post(
+        "http://localhost:12000/api/data/list/delete",
+        { id: id }
+      );
+      console.log(res);
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  const handleTaskDelete = async (id: number) => {
+    try {
+      const res = await axios.post(
+        "http://localhost:12000/api/data/task/delete",
+        { id: id }
+      );
+      console.log(res);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     if (editingTaskIndex !== null && inputEdit.current) {
       inputEdit.current.focus();
@@ -199,6 +224,13 @@ const List: React.FC<ListProps> = ({ name, id_list, initial_tasks }) => {
   return (
     <div className="m-2 border border-dashed p-4">
       <h1 className="mb-2 text-center text-gray-300">{name}</h1>
+      <button
+        type="button"
+        value="Delete"
+        onClick={() => handleListDelete(id_list)}
+      >
+        Delete List
+      </button>
       <div>
         <input
           className="rounded-md text-center"
@@ -316,14 +348,17 @@ const List: React.FC<ListProps> = ({ name, id_list, initial_tasks }) => {
               </button>
               <button
                 onClick={() => {
-                  handleComplete(index);
+                  task.priority
+                    ? handleComplete(index)
+                    : handleTaskDelete(task.id);
+                  // handleComplete(index);
                 }}
                 className="absolute left-0 cursor-pointer"
               >
                 {task.priority ? (
                   <img src={"assets/icons/checkbox.png"} className="w-7"></img>
                 ) : (
-                  <img className=""></img>
+                  <img src={"assets/icons/delete.png"} className="w-7"></img>
                 )}
               </button>
             </div>

@@ -81,6 +81,18 @@ app.post("/api/data/task/update", async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 });
+// Delete Task
+app.post("/api/data/task/delete", async (req, res) => {
+  try {
+    const { id } = req.body;
+    console.log(id);
+    await con("tasks").where("id", id).del();
+    res.json({ message: "Task" + id + " Deleted" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 // Post List
 app.post("/api/data/list", async (req, res) => {
@@ -90,10 +102,22 @@ app.post("/api/data/list", async (req, res) => {
     res.json({ message: "Inserted: " + name });
   } catch (error) {
     console.log(error);
+    res.status(500).json({ error: "Server error" });
   }
 });
-
-app.delete("/api/data/list/delete", async (req, res) => {});
+// Delete List
+app.post("/api/data/list/delete", async (req, res) => {
+  try {
+    const { id } = req.body;
+    console.log(req.body);
+    await con("tasks").where("id_list", id).del();
+    await con("lists").where("id", id).delete();
+    res.json({ message: "List" + id + " Deleted" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 app.listen(12000, () => {
   console.log("Run");
