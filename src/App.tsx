@@ -62,7 +62,7 @@ const App = () => {
         isOpen
           ? "flex pl-[224px] transition-all duration-300"
           : "flex transition-all duration-300"
-      } bg-slate-800`}
+      } bg-slate-900`}
     >
       <div className="flex h-[100vh] items-center">
         <button
