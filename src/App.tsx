@@ -10,6 +10,7 @@ import Lines from "./projects/InterviewChallenges/Lines/Lines";
 import Calculator from "./projects/Calculator/Calculator";
 import PokemonView from "./projects/Pokemon/components/PokemonView";
 import ToDoList from "./projects/ToDoList/ToDoList";
+import Zadanie from "./projects/Zadanie/Zadanie";
 
 const router = createBrowserRouter([
   {
@@ -45,6 +46,11 @@ const router = createBrowserRouter([
   {
     path: "/ToDoList",
     element: <ToDoList></ToDoList>,
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: "/Zadanie",
+    element: <Zadanie></Zadanie>,
     errorElement: <ErrorPage />,
   },
 ]);

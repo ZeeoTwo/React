@@ -5,7 +5,8 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "server": "node ./src/server/index.js"
+    "server": "node ./src/server/index.js",
+    "admin": "node ./src/server/admin.js"
   },
   "dependencies": {
     "@types/express": "^4.17.17",
